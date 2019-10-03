@@ -43,7 +43,7 @@ public class FakeRobotWidget extends DecoratedWidget {
 
 		addRowButton = new JButton("Add Row");
 		valuesToSendPanel.add(addRowButton);
-		
+
 		decoratedWidgetLoaded();
 	}
 
@@ -68,9 +68,9 @@ public class FakeRobotWidget extends DecoratedWidget {
 
 	@Override
 	protected void decoratedWidgetLoaded() {
-		
+
 		NetworkServer.getInstance().setPort(12345);
-		
+
 		addRowButton.addActionListener((ActionEvent) -> {
 			valuesToSendPanel.remove(addRowButton);
 			JTextField nameTextField = new JTextField(10);
@@ -83,7 +83,7 @@ public class FakeRobotWidget extends DecoratedWidget {
 		});
 
 		settingsButton.addActionListener((ActionEvent) -> createSettingsDialog());
-	
+
 		new Timer(true).schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -91,7 +91,7 @@ public class FakeRobotWidget extends DecoratedWidget {
 					String curName = curNameValuePair[0].getText();
 					String curValue = curNameValuePair[1].getText();
 
-					if (curName != null && !curName.isEmpty() && curValue != null && !curValue.isEmpty()) {
+					if (curName != null && curValue != null) {
 						NetworkServer.getInstance().writeString(curName, curValue);
 					}
 				}

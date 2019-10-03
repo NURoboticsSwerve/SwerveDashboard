@@ -42,6 +42,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import network.NetworkClient;
 import widgets.FakeRobotWidget;
+import widgets.GraphWidget;
 import widgets.RedRectangleWidget;
 import widgets.TextBoxWidget;
 
@@ -75,6 +76,7 @@ public class Dashboard {
 		widgetTypes.add(RedRectangleWidget.class);
 		widgetTypes.add(TextBoxWidget.class);
 		widgetTypes.add(FakeRobotWidget.class);
+		widgetTypes.add(GraphWidget.class);
 	}
 
 	@SuppressWarnings("unchecked")

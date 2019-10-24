@@ -3,8 +3,6 @@ package widgets;
 import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,10 +11,8 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import network.NetworkClient;
 import network.NetworkServer;
 
 /**

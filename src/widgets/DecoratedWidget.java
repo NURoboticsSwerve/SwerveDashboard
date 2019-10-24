@@ -1,14 +1,12 @@
 package widgets;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import dashboard.Widget;
-import network.NetworkClient;
 
 /**
  * @author Nicholas Contreras

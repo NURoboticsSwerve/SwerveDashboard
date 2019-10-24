@@ -40,6 +40,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import network.NetworkClient;
+import widgets.ConnectionWidget;
 import widgets.FakeRobotWidget;
 import widgets.GraphWidget;
 import widgets.NyanWidget;
@@ -78,6 +79,7 @@ public class Dashboard {
 		widgetTypes.add(FakeRobotWidget.class);
 		widgetTypes.add(GraphWidget.class);
 		widgetTypes.add(NyanWidget.class);
+		widgetTypes.add(ConnectionWidget.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -101,7 +103,6 @@ public class Dashboard {
 
 		for (File curFile : DATA_DIR.listFiles()) {
 			if (curFile.getName().endsWith(".jar")) {
-				System.out.println("Found jarfile: " + curFile.getName());
 				try {
 					JarFile jarFile = new JarFile(curFile);
 					Enumeration<JarEntry> e = jarFile.entries();
@@ -111,8 +112,6 @@ public class Dashboard {
 					while (e.hasMoreElements()) {
 						JarEntry je = e.nextElement();
 
-						System.out.println("Cur element: " + je.getName());
-
 						if (je.isDirectory() || !je.getName().endsWith(".class")) {
 							continue;
 						}
@@ -121,8 +120,6 @@ public class Dashboard {
 						className = className.replace('/', '.');
 						try {
 							Class<?> c = sysloader.loadClass(className);
-							System.out.println("Loaded class: " + c);
-							System.out.println("is widget? " + Widget.class.isAssignableFrom(c));
 							if (Widget.class.isAssignableFrom(c)) {
 								widgetTypes.add((Class<? extends Widget>) c);
 							}
@@ -160,7 +157,6 @@ public class Dashboard {
 		loadSaveFile(new File(DATA_DIR, "default.dash"));
 
 		if (widgetPanel == null) {
-			System.out.println("Creating blank panel");
 			widgetPanel = new WidgetPanel();
 		}
 
@@ -225,7 +221,6 @@ public class Dashboard {
 		JMenu addMenu = new JMenu("Add");
 
 		for (Class<? extends Widget> curWidgetType : widgetTypes) {
-			System.out.println("Add to menu: " + curWidgetType);
 			JMenuItem curAddMenuItem = new JMenuItem(curWidgetType.getSimpleName());
 			curAddMenuItem.addActionListener((ActionEvent) -> {
 				try {

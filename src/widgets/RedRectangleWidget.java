@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 
 import dashboard.Widget;
-import network.NetworkClient;
 
 /**
  * @author Nicholas Contreras

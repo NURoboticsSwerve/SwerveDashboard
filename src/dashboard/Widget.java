@@ -2,14 +2,11 @@ package dashboard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Insets;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
-
-import network.NetworkClient;
 
 /**
  * @author Nicholas Contreras

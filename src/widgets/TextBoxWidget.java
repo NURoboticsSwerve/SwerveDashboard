@@ -19,6 +19,8 @@ import network.NetworkClient;
 
 @SuppressWarnings("serial")
 public class TextBoxWidget extends DecoratedWidget {
+	
+	public static final String NAME = "Text Box";
 
 	private final JTextField textField;
 	private String valueToDisplay;

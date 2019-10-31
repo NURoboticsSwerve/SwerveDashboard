@@ -15,6 +15,8 @@ import network.NetworkClient;
 
 @SuppressWarnings("serial")
 public class ConnectionWidget extends DecoratedWidget {
+	
+	public static final String NAME = "Connection Status";
 
 	private JTextField field;
 

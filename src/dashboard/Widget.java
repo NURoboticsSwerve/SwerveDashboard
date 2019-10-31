@@ -37,6 +37,11 @@ abstract public class Widget extends JPanel {
 
 	void setSelected(boolean selected) {
 		this.selected = selected;
+
+		if (selected) {
+			moveResizePanel.requestFocusInWindow();
+		}
+
 		updateBorder();
 	}
 
@@ -112,6 +117,7 @@ abstract public class Widget extends JPanel {
 		private MoveResizePanel(Widget widget) {
 			super(new BorderLayout(0, 0));
 			this.setOpaque(false);
+			this.setFocusable(true);
 			this.widget = widget;
 		}
 

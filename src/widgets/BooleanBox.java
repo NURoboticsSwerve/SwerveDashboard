@@ -10,11 +10,17 @@ import dashboard.Widget;
  */
 
 @SuppressWarnings("serial")
-public class RedRectangleWidget extends Widget {
+public class BooleanBox extends Widget {
 
-	public RedRectangleWidget() {
+	public static final String NAME = "Boolean Box";
+	
+	public BooleanBox() {
 		this.setPreferredSize(new Dimension(100, 100));
 		this.setMinimumSize(new Dimension(100, 100));
+	}
+	
+	public static String getDisplayName() {
+		return "Boolean Box";
 	}
 
 	@Override

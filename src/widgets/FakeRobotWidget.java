@@ -21,6 +21,8 @@ import network.NetworkServer;
 
 @SuppressWarnings("serial")
 public class FakeRobotWidget extends DecoratedWidget {
+	
+	public static final String NAME = "Fake Robot";
 
 	private final ArrayList<JTextField[]> valuesTable;
 

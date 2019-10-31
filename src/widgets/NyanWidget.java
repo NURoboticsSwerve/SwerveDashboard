@@ -17,6 +17,8 @@ import javax.swing.JLabel;
 
 @SuppressWarnings("serial")
 public class NyanWidget extends DecoratedWidget {
+	
+	public static final String NAME = "Nyan";
 
 	private static final int NUM_FRAMES = 12;
 

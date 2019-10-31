@@ -33,6 +33,8 @@ import network.NetworkClient;
 
 @SuppressWarnings("serial")
 public class GraphWidget extends DecoratedWidget {
+	
+	public static final String NAME = "Graph";
 
 	private static final int PLOT_PERIOD = 20;
 	private static final int NUM_VALUES = 5;

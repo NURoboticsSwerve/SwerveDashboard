@@ -40,11 +40,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import network.NetworkClient;
+import widgets.BooleanBox;
 import widgets.ConnectionWidget;
 import widgets.FakeRobotWidget;
 import widgets.GraphWidget;
 import widgets.NyanWidget;
-import widgets.RedRectangleWidget;
 import widgets.TextBoxWidget;
 
 /**
@@ -74,7 +74,7 @@ public class Dashboard {
 	}
 
 	private void loadBuiltInWidgets() {
-		widgetTypes.add(RedRectangleWidget.class);
+		widgetTypes.add(BooleanBox.class);
 		widgetTypes.add(TextBoxWidget.class);
 		widgetTypes.add(FakeRobotWidget.class);
 		widgetTypes.add(GraphWidget.class);
@@ -221,7 +221,14 @@ public class Dashboard {
 		JMenu addMenu = new JMenu("Add");
 
 		for (Class<? extends Widget> curWidgetType : widgetTypes) {
-			JMenuItem curAddMenuItem = new JMenuItem(curWidgetType.getSimpleName());
+			String name = curWidgetType.getSimpleName();
+
+			try {
+				name = (String) curWidgetType.getField("NAME").get(null);
+			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e1) {
+			}
+
+			JMenuItem curAddMenuItem = new JMenuItem(name);
 			curAddMenuItem.addActionListener((ActionEvent) -> {
 				try {
 					widgetPanel.addWidget(curWidgetType.newInstance());

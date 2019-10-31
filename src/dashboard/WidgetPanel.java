@@ -2,6 +2,8 @@ package dashboard;
 
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,12 +20,14 @@ public class WidgetPanel extends JPanel {
 
 	private final ArrayList<Widget> widgets;
 	private final WidgetMoveResizeManager moveResizeManager;
+	private final WidgetRemoveManager removeManager;
 
 	WidgetPanel() {
 		super(null);
 
 		widgets = new ArrayList<Widget>();
 		moveResizeManager = new WidgetMoveResizeManager();
+		removeManager = new WidgetRemoveManager();
 
 		this.addMouseListener(moveResizeManager);
 		this.addMouseMotionListener(moveResizeManager);
@@ -33,6 +37,7 @@ public class WidgetPanel extends JPanel {
 		this.add(w.getMoveResizePanel());
 		w.getMoveResizePanel().addMouseListener(moveResizeManager);
 		w.getMoveResizePanel().addMouseMotionListener(moveResizeManager);
+		w.getMoveResizePanel().addKeyListener(removeManager);
 		w.setup();
 		widgets.add(w);
 	}
@@ -170,6 +175,31 @@ public class WidgetPanel extends JPanel {
 
 		private Widget getWidgetFromEvent(MouseEvent event) {
 			return ((Widget.MoveResizePanel) event.getSource()).getWidget();
+		}
+	}
+
+	private class WidgetRemoveManager implements KeyListener, Serializable {
+		@Override
+		public void keyTyped(KeyEvent e) {
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			System.out.println("del " + e.getComponent());
+			if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+				for (int i = 0; i < widgets.size(); i++) {
+					if (widgets.get(i).getMoveResizePanel() == e.getComponent()) {
+						if (widgets.get(i).isSelected()) {
+							widgets.get(i).removeWidget();
+						}
+						break;
+					}
+				}
+			}
 		}
 	}
 }

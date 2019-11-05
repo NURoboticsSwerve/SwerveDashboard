@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,7 +35,18 @@ public class NyanWidget extends DecoratedWidget {
 		imageLabel.setPreferredSize(new Dimension(400, 400));
 		this.add(imageLabel, BorderLayout.CENTER);
 
-		decoratedWidgetLoaded();
+		try {
+			masterImage = ImageIO.read(this.getClass().getResourceAsStream("/nyan.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		new Timer(true).schedule(new TimerTask() {
+			@Override
+			public void run() {
+				updateNyan();
+			}
+		}, 0, 100);
 	}
 
 	private void updateNyan() {
@@ -48,19 +60,14 @@ public class NyanWidget extends DecoratedWidget {
 	}
 
 	@Override
-	protected void decoratedWidgetLoaded() {
-		try {
-			masterImage = ImageIO.read(this.getClass().getResourceAsStream("/nyan.png"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	protected void widgetLoaded(Map<String, String> args) {
+		// TODO Auto-generated method stub
+		
+	}
 
-		new Timer(true).schedule(new TimerTask() {
-
-			@Override
-			public void run() {
-				updateNyan();
-			}
-		}, 0, 100);
+	@Override
+	protected Map<String, String> widgetSaved() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -2,6 +2,7 @@ package widgets;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,7 +16,7 @@ import network.NetworkClient;
 
 @SuppressWarnings("serial")
 public class ConnectionWidget extends DecoratedWidget {
-	
+
 	public static final String NAME = "Connection Status";
 
 	private JTextField field;
@@ -24,11 +25,6 @@ public class ConnectionWidget extends DecoratedWidget {
 		field = new JTextField(10);
 		this.add(field, BorderLayout.CENTER);
 
-		decoratedWidgetLoaded();
-	}
-
-	@Override
-	protected void decoratedWidgetLoaded() {
 		new Timer(true).schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -41,5 +37,14 @@ public class ConnectionWidget extends DecoratedWidget {
 				field.setText("Ping: " + NetworkClient.getInstance().getPingTime() + "ms");
 			}
 		}, 0, 1000);
+	}
+
+	@Override
+	protected void widgetLoaded(Map<String, String> args) {
+	}
+
+	@Override
+	protected Map<String, String> widgetSaved() {
+		return null;
 	}
 }

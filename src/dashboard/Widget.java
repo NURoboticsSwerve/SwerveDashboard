@@ -3,6 +3,10 @@ package dashboard;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Insets;
+import java.util.Base64;
+import java.util.Base64.Encoder;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -97,7 +101,24 @@ abstract public class Widget extends JPanel {
 		return removeRequested;
 	}
 
-	abstract protected void widgetLoaded();
+	String toSaveForm() {
+		String s = this.getClass().getCanonicalName() + ",";
+		s += this.getX() + "," + this.getY() + "," + this.getWidth() + "," + this.getHeight();
+
+		Map<String, String> saveMap = widgetSaved();
+		if (saveMap != null) {
+			Encoder encoder = Base64.getEncoder();
+			for (Entry<String, String> curEntry : saveMap.entrySet()) {
+				s += "," + encoder.encodeToString(curEntry.getKey().getBytes());
+				s += ":" + encoder.encodeToString(curEntry.getValue().getBytes());
+			}
+		}
+		return s;
+	}
+
+	abstract protected void widgetLoaded(Map<String, String> args);
+
+	abstract protected Map<String, String> widgetSaved();
 
 	private void updateBorder() {
 		Border outerBorder = BorderFactory.createEmptyBorder(selectableBorderRegionWidth / 2,

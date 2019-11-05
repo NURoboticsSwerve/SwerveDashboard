@@ -36,12 +36,4 @@ abstract public class DecoratedWidget extends Widget {
 
 		add(topPanel, BorderLayout.NORTH);
 	}
-
-	@Override
-	protected void widgetLoaded() {
-		removeButton.addActionListener((ActionEvent) -> removeWidget());
-		decoratedWidgetLoaded();
-	}
-
-	abstract protected void decoratedWidgetLoaded();
 }

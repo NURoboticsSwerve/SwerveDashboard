@@ -2,6 +2,7 @@ package widgets;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.Map;
 
 import dashboard.Widget;
 
@@ -30,6 +31,11 @@ public class BooleanBox extends Widget {
 	}
 
 	@Override
-	protected void widgetLoaded() {
+	protected void widgetLoaded(Map<String, String> args) {
+	}
+
+	@Override
+	protected Map<String, String> widgetSaved() {
+		return null;
 	}
 }

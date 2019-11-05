@@ -4,14 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -62,15 +60,6 @@ public class Dashboard {
 
 	private Dashboard() {
 		widgetTypes = new ArrayList<Class<? extends Widget>>();
-	}
-
-	private void setWidgetPanel(WidgetPanel wp) {
-		if (widgetPanel != null) {
-			frame.remove(widgetPanel);
-		}
-		frame.add(wp);
-		widgetPanel = wp;
-		frame.revalidate();
 	}
 
 	private void loadBuiltInWidgets() {
@@ -154,11 +143,9 @@ public class Dashboard {
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setMinimumSize(new Dimension(400, 300));
 
-		loadSaveFile(new File(DATA_DIR, "default.dash"));
+		widgetPanel = new WidgetPanel();
 
-		if (widgetPanel == null) {
-			widgetPanel = new WidgetPanel();
-		}
+		loadSaveFile(new File(DATA_DIR, "default.dash"));
 
 		JMenuBar menuBar = new JMenuBar();
 
@@ -166,7 +153,7 @@ public class Dashboard {
 
 		JMenuItem clearMenuItem = new JMenuItem("Clear");
 		clearMenuItem.addActionListener((ActionEvent) -> {
-			setWidgetPanel(new WidgetPanel());
+			widgetPanel.clear();
 		});
 		fileMenu.add(clearMenuItem);
 
@@ -244,7 +231,7 @@ public class Dashboard {
 
 		frame.setJMenuBar(menuBar);
 
-		setWidgetPanel(widgetPanel);
+		frame.add(widgetPanel);
 
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -272,10 +259,12 @@ public class Dashboard {
 
 		panel.add(new JLabel("Robot Address:"));
 		JTextField addressTextField = new JTextField(NetworkClient.getInstance().getTargetAddress());
+		addressTextField.setColumns(20);
 		panel.add(addressTextField);
 
 		panel.add(new JLabel("Port Number:"));
 		JTextField portNumberField = new JTextField(NetworkClient.getInstance().getTargetPort() + "");
+		portNumberField.setColumns(20);
 		panel.add(portNumberField);
 
 		outerPanel.add(panel, BorderLayout.CENTER);
@@ -284,6 +273,7 @@ public class Dashboard {
 		reconnectButton.addActionListener((ActionEvent) -> {
 			NetworkClient.getInstance().setAddress(addressTextField.getText(),
 					Integer.parseInt(portNumberField.getText()));
+			networkSettingsDialog.dispose();
 		});
 		outerPanel.add(reconnectButton, BorderLayout.SOUTH);
 
@@ -294,12 +284,15 @@ public class Dashboard {
 	}
 
 	private void writeSaveFile(File saveFile) {
+
+		String saveString = NetworkClient.getInstance().getTargetAddress() + ","
+				+ NetworkClient.getInstance().getTargetPort() + "-";
+		saveString += widgetPanel.toSaveForm();
+
 		try {
-			FileOutputStream fos = new FileOutputStream(saveFile);
-			BufferedOutputStream bos = new BufferedOutputStream(fos);
-			ObjectOutputStream output = new ObjectOutputStream(bos);
-			output.writeObject(widgetPanel);
-			output.close();
+			FileOutputStream fos = new FileOutputStream(saveFile, false);
+			fos.write(saveString.getBytes());
+			fos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -309,13 +302,17 @@ public class Dashboard {
 		if (saveFile.isFile() && saveFile.canRead()) {
 			try {
 				FileInputStream fis = new FileInputStream(saveFile);
-				BufferedInputStream bis = new BufferedInputStream(fis);
-				ObjectInputStream input = new ObjectInputStream(bis);
-				Object read = input.readObject();
-				input.close();
-				setWidgetPanel((WidgetPanel) read);
-				widgetPanel.triggerWidgetLoad();
-			} catch (IOException | ClassNotFoundException e) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+
+				String loadedData = br.readLine();
+				String[] splitData = loadedData.split("-");
+				String[] splitMyData = splitData[0].split(",");
+				NetworkClient.getInstance().setAddress(splitMyData[0], Integer.parseInt(splitMyData[1]));
+
+				widgetPanel.clear();
+				widgetPanel.addFromData(splitData[1]);
+				br.close();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

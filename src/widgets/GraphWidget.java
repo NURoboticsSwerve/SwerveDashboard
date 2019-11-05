@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,7 +34,7 @@ import network.NetworkClient;
 
 @SuppressWarnings("serial")
 public class GraphWidget extends DecoratedWidget {
-	
+
 	public static final String NAME = "Graph";
 
 	private static final int PLOT_PERIOD = 20;
@@ -76,7 +77,48 @@ public class GraphWidget extends DecoratedWidget {
 
 		titleLabel.setText("Graph");
 
-		decoratedWidgetLoaded();
+		settingsButton.addActionListener((ActionEvent) -> createSettingsDialog());
+		Timer t = new Timer(true);
+		t.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				if (running) {
+					updateValueHistory();
+				}
+			}
+		}, 0, PLOT_PERIOD);
+
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				updateGraph();
+			}
+		}, 0, PLOT_PERIOD);
+
+		chartPanel.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					running = !running;
+				}
+			}
+		});
 	}
 
 	private void updateValueHistory() {
@@ -170,52 +212,6 @@ public class GraphWidget extends DecoratedWidget {
 		settingsDialog.setVisible(true);
 	}
 
-	@Override
-	protected void decoratedWidgetLoaded() {
-		settingsButton.addActionListener((ActionEvent) -> createSettingsDialog());
-		Timer t = new Timer(true);
-		t.scheduleAtFixedRate(new TimerTask() {
-			@Override
-			public void run() {
-				if (running) {
-					updateValueHistory();
-				}
-			}
-		}, 0, PLOT_PERIOD);
-
-		t.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				updateGraph();
-			}
-		}, 0, PLOT_PERIOD);
-
-		chartPanel.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
-					running = !running;
-				}
-			}
-		});
-	}
-
 	private class Datapoint implements Serializable {
 
 		private final long time;
@@ -225,5 +221,17 @@ public class GraphWidget extends DecoratedWidget {
 			this.time = time;
 			this.value = value;
 		}
+	}
+
+	@Override
+	protected void widgetLoaded(Map<String, String> args) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected Map<String, String> widgetSaved() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

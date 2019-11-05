@@ -7,6 +7,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Base64.Decoder;
 
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
@@ -33,6 +37,33 @@ public class WidgetPanel extends JPanel {
 		this.addMouseMotionListener(moveResizeManager);
 	}
 
+	void addFromData(String widgetsData) {
+		for (String curWidgetString : widgetsData.split(";")) {
+			String[] curWidgetData = curWidgetString.split(",");
+			try {
+				Widget newWidget = (Widget) Class.forName(curWidgetData[0]).newInstance();
+				int x = Integer.parseInt(curWidgetData[1]);
+				int y = Integer.parseInt(curWidgetData[2]);
+				int width = Integer.parseInt(curWidgetData[3]);
+				int height = Integer.parseInt(curWidgetData[4]);
+				newWidget.getMoveResizePanel().setBounds(x, y, width, height);
+
+				Decoder decoder = Base64.getDecoder();
+				Map<String, String> dataMap = new HashMap<String, String>();
+				for (int i = 5; i < curWidgetData.length; i++) {
+					String[] keyValueEncodedPair = curWidgetData[i].split(":");
+					String key = new String(decoder.decode(keyValueEncodedPair[0]));
+					String value = new String(decoder.decode(keyValueEncodedPair[1]));
+					dataMap.put(key, value);
+				}
+				newWidget.widgetLoaded(dataMap);
+				addWidget(newWidget);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	void addWidget(Widget w) {
 		this.add(w.getMoveResizePanel());
 		w.getMoveResizePanel().addMouseListener(moveResizeManager);
@@ -40,6 +71,22 @@ public class WidgetPanel extends JPanel {
 		w.getMoveResizePanel().addKeyListener(removeManager);
 		w.setup();
 		widgets.add(w);
+	}
+
+	String toSaveForm() {
+		String s = "";
+
+		for (int i = 0; i < widgets.size(); i++) {
+			s += ";" + widgets.get(i).toSaveForm();
+		}
+
+		return s.substring(1);
+	}
+
+	void clear() {
+		while (!widgets.isEmpty()) {
+			widgets.get(0).removeWidget();
+		}
 	}
 
 	@Override
@@ -54,12 +101,6 @@ public class WidgetPanel extends JPanel {
 		}
 
 		super.paintComponent(g);
-	}
-
-	void triggerWidgetLoad() {
-		for (int i = 0; i < widgets.size(); i++) {
-			widgets.get(i).widgetLoaded();
-		}
 	}
 
 	private class WidgetMoveResizeManager implements MouseInputListener, Serializable {

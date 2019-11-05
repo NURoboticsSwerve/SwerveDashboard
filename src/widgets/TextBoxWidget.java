@@ -2,6 +2,7 @@ package widgets;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -41,7 +42,7 @@ public class TextBoxWidget extends DecoratedWidget {
 
 		add(textField, BorderLayout.CENTER);
 
-		decoratedWidgetLoaded();
+		settingsButton.addActionListener((ActionEvent) -> displaySettingsDialog());
 	}
 
 	private void displaySettingsDialog() {
@@ -88,7 +89,11 @@ public class TextBoxWidget extends DecoratedWidget {
 	}
 
 	@Override
-	protected void decoratedWidgetLoaded() {
-		settingsButton.addActionListener((ActionEvent) -> displaySettingsDialog());
+	protected void widgetLoaded(Map<String, String> args) {
+	}
+
+	@Override
+	protected Map<String, String> widgetSaved() {
+		return null;
 	}
 }

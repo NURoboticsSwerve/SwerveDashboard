@@ -6,8 +6,11 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
+import dashboard.Widget;
 import network.NetworkClient;
 
 /**
@@ -15,13 +18,16 @@ import network.NetworkClient;
  */
 
 @SuppressWarnings("serial")
-public class ConnectionWidget extends DecoratedWidget {
+public class ConnectionWidget extends Widget {
 
 	public static final String NAME = "Connection Status";
 
 	private JTextField field;
 
 	public ConnectionWidget() {
+
+		this.add(new JLabel("Connection Status", SwingConstants.CENTER), BorderLayout.NORTH);
+
 		field = new JTextField(10);
 		this.add(field, BorderLayout.CENTER);
 
@@ -46,5 +52,9 @@ public class ConnectionWidget extends DecoratedWidget {
 	@Override
 	protected Map<String, String> widgetSaved() {
 		return null;
+	}
+
+	@Override
+	protected void showSettingsWindow() {
 	}
 }

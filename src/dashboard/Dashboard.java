@@ -65,7 +65,7 @@ public class Dashboard {
 	private void loadBuiltInWidgets() {
 		widgetTypes.add(BooleanBox.class);
 		widgetTypes.add(TextBoxWidget.class);
-		widgetTypes.add(FakeRobotWidget.class);
+//		widgetTypes.add(FakeRobotWidget.class);
 		widgetTypes.add(GraphWidget.class);
 		widgetTypes.add(NyanWidget.class);
 		widgetTypes.add(ConnectionWidget.class);

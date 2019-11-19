@@ -10,10 +10,13 @@ import java.util.TimerTask;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
+import dashboard.Widget;
 import network.NetworkServer;
 
 /**
@@ -21,8 +24,8 @@ import network.NetworkServer;
  */
 
 @SuppressWarnings("serial")
-public class FakeRobotWidget extends DecoratedWidget {
-	
+public class FakeRobotWidget extends Widget {
+
 	public static final String NAME = "Fake Robot";
 
 	private final ArrayList<JTextField[]> valuesTable;
@@ -33,12 +36,14 @@ public class FakeRobotWidget extends DecoratedWidget {
 	public FakeRobotWidget() {
 		valuesTable = new ArrayList<JTextField[]>();
 
+		this.add(new JLabel("Fake Robot", SwingConstants.CENTER), BorderLayout.NORTH);
+
 		valuesToSendPanel = new JPanel(new GridLayout(0, 2));
 
 		JScrollPane jsp = new JScrollPane(valuesToSendPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		add(jsp, BorderLayout.CENTER);
+		this.add(jsp, BorderLayout.CENTER);
 
 		addRowButton = new JButton("Add Row");
 		addRowButton.addActionListener((ActionEvent) -> {
@@ -52,8 +57,6 @@ public class FakeRobotWidget extends DecoratedWidget {
 			revalidate();
 		});
 		valuesToSendPanel.add(addRowButton);
-		
-		settingsButton.addActionListener((ActionEvent) -> createSettingsDialog());
 
 		NetworkServer.getInstance().setPort(12345);
 
@@ -72,7 +75,17 @@ public class FakeRobotWidget extends DecoratedWidget {
 		}, 0, 100);
 	}
 
-	private void createSettingsDialog() {
+	@Override
+	protected void widgetLoaded(Map<String, String> args) {
+	}
+
+	@Override
+	protected Map<String, String> widgetSaved() {
+		return null;
+	}
+
+	@Override
+	protected void showSettingsWindow() {
 		JDialog settingsDialog = new JDialog();
 		settingsDialog.setModalityType(ModalityType.APPLICATION_MODAL);
 		JTextField serverPortField = new JTextField(NetworkServer.getInstance().getTargetPort() + "");
@@ -88,14 +101,5 @@ public class FakeRobotWidget extends DecoratedWidget {
 				NetworkServer.getInstance().setPort(Integer.parseInt(serverPortField.getText()));
 			}
 		}, 0);
-	}
-
-	@Override
-	protected void widgetLoaded(Map<String, String> args) {
-	}
-
-	@Override
-	protected Map<String, String> widgetSaved() {
-		return null;
 	}
 }

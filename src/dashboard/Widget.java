@@ -28,6 +28,7 @@ abstract public class Widget extends JPanel {
 	private boolean removeRequested;
 
 	public Widget() {
+		this.setLayout(new BorderLayout());
 		moveResizePanel = new MoveResizePanel(this);
 		setSelectableBorderRegionWidth(10);
 		moveResizePanel.add(this, BorderLayout.CENTER);
@@ -119,6 +120,8 @@ abstract public class Widget extends JPanel {
 	abstract protected void widgetLoaded(Map<String, String> args);
 
 	abstract protected Map<String, String> widgetSaved();
+
+	protected abstract void showSettingsWindow();
 
 	private void updateBorder() {
 		Border outerBorder = BorderFactory.createEmptyBorder(selectableBorderRegionWidth / 2,

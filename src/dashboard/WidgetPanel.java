@@ -117,6 +117,11 @@ public class WidgetPanel extends JPanel {
 
 			if (isEventOnWidget(event)) {
 				Widget widgetClicked = getWidgetFromEvent(event);
+
+				if (event.getButton() == MouseEvent.BUTTON3) {
+					widgetClicked.showSettingsWindow();
+				}
+
 				widgetClicked.setSelected(true);
 			}
 		}

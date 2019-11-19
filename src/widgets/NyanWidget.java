@@ -12,12 +12,14 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+import dashboard.Widget;
+
 /**
  * @author Nicholas Contreras
  */
 
 @SuppressWarnings("serial")
-public class NyanWidget extends DecoratedWidget {
+public class NyanWidget extends Widget {
 	
 	public static final String NAME = "Nyan";
 
@@ -61,13 +63,14 @@ public class NyanWidget extends DecoratedWidget {
 
 	@Override
 	protected void widgetLoaded(Map<String, String> args) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	protected Map<String, String> widgetSaved() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	protected void showSettingsWindow() {
 	}
 }

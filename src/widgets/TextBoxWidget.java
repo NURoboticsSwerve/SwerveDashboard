@@ -2,6 +2,7 @@ package widgets;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -12,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import dashboard.Widget;
 import network.NetworkClient;
 
 /**
@@ -19,10 +21,11 @@ import network.NetworkClient;
  */
 
 @SuppressWarnings("serial")
-public class TextBoxWidget extends DecoratedWidget {
-	
+public class TextBoxWidget extends Widget {
+
 	public static final String NAME = "Text Box";
 
+	private final JLabel titleLabel;
 	private final JTextField textField;
 	private String valueToDisplay;
 
@@ -30,7 +33,12 @@ public class TextBoxWidget extends DecoratedWidget {
 
 	public TextBoxWidget() {
 
-		textField = new JTextField();
+		titleLabel = new JLabel("New Text Box", SwingConstants.CENTER);
+		this.add(titleLabel, BorderLayout.NORTH);
+
+		valueToDisplay = "";
+
+		textField = new JTextField(20);
 		textField.setEditable(false);
 		textField.setHorizontalAlignment(JTextField.CENTER);
 
@@ -40,13 +48,44 @@ public class TextBoxWidget extends DecoratedWidget {
 			}
 		});
 
-		add(textField, BorderLayout.CENTER);
-
-		settingsButton.addActionListener((ActionEvent) -> displaySettingsDialog());
+		this.add(textField, BorderLayout.CENTER);
 	}
 
-	private void displaySettingsDialog() {
+	private void setMonitoredValue(String toWatch) {
+		if (toWatch != null) {
+			
+			titleLabel.setText("Text Box: '" + toWatch + "'");
+			
+			if (valueToDisplay != null) {
+				NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
+			}
+
+			callbackName = "BooleanBox-" + Math.random() + "-" + System.currentTimeMillis();
+			valueToDisplay = toWatch;
+			NetworkClient.getInstance().addValueMonitor(toWatch, callbackName, () -> {
+				textField.setText(NetworkClient.getInstance().readString(valueToDisplay));
+			});
+		}
+	}
+
+	@Override
+	protected void widgetLoaded(Map<String, String> args) {
+		setMonitoredValue(args.get("valueToDisplay"));
+		textField.setEditable("true".equals(args.get("editable")));
+	}
+
+	@Override
+	protected Map<String, String> widgetSaved() {
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("valueToDisplay", valueToDisplay);
+		map.put("editable", Boolean.toString(textField.isEditable()));
+		return map;
+	}
+
+	@Override
+	protected void showSettingsWindow() {
 		JDialog settingsDialog = new JDialog();
+		settingsDialog.setTitle("Settings");
 		settingsDialog.setLocationRelativeTo(this);
 		settingsDialog.setModalityType(ModalityType.APPLICATION_MODAL);
 		settingsDialog.setLayout(new BorderLayout(5, 5));
@@ -60,6 +99,7 @@ public class TextBoxWidget extends DecoratedWidget {
 		settingsPanel.add(displayValueTextField, BorderLayout.EAST);
 
 		JCheckBox editableCheckBox = new JCheckBox("Editable Value:");
+		editableCheckBox.setSelected(textField.isEditable());
 		editableCheckBox.setHorizontalAlignment(SwingConstants.CENTER);
 		editableCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 		settingsPanel.add(editableCheckBox, BorderLayout.SOUTH);
@@ -68,32 +108,13 @@ public class TextBoxWidget extends DecoratedWidget {
 
 		JButton closeButton = new JButton("Close");
 		closeButton.addActionListener((ActionEvent) -> {
-
-			NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
-
-			valueToDisplay = displayValueTextField.getText();
-			titleLabel.setText(valueToDisplay);
+			setMonitoredValue(displayValueTextField.getText());
 			textField.setEditable(editableCheckBox.isSelected());
-
-			callbackName = valueToDisplay + System.currentTimeMillis();
-			NetworkClient.getInstance().addValueMonitor(valueToDisplay, callbackName, () -> {
-				textField.setText(NetworkClient.getInstance().readString(valueToDisplay));
-			});
-
 			settingsDialog.dispose();
 		});
 		settingsDialog.add(closeButton, BorderLayout.SOUTH);
 
 		settingsDialog.pack();
 		settingsDialog.setVisible(true);
-	}
-
-	@Override
-	protected void widgetLoaded(Map<String, String> args) {
-	}
-
-	@Override
-	protected Map<String, String> widgetSaved() {
-		return null;
 	}
 }

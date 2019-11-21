@@ -22,6 +22,8 @@ public class ConnectionWidget extends Widget {
 
 	public static final String NAME = "Connection Status";
 
+	private final Timer timer;
+
 	private JTextField field;
 
 	public ConnectionWidget() {
@@ -31,7 +33,8 @@ public class ConnectionWidget extends Widget {
 		field = new JTextField(10);
 		this.add(field, BorderLayout.CENTER);
 
-		new Timer(true).schedule(new TimerTask() {
+		timer = new Timer(true);
+		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				if (NetworkClient.getInstance().isConnected()) {
@@ -43,6 +46,11 @@ public class ConnectionWidget extends Widget {
 				field.setText("Ping: " + NetworkClient.getInstance().getPingTime() + "ms");
 			}
 		}, 0, 1000);
+	}
+
+	@Override
+	protected void deconstruct() {
+		timer.cancel();
 	}
 
 	@Override

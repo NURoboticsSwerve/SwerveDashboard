@@ -73,6 +73,11 @@ public class BooleanBox extends Widget {
 	}
 
 	@Override
+	protected void deconstruct() {
+		NetworkClient.getInstance().removeValueMonitor(valueToWatch, callbackName);
+	}
+
+	@Override
 	protected void widgetLoaded(Map<String, String> args) {
 		setMonitoredValue(args.get("valueToWatch"));
 	}

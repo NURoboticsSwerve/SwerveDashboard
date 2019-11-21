@@ -1,9 +1,13 @@
 package widgets;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
@@ -12,6 +16,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -19,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -26,212 +32,156 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import dashboard.Widget;
 import network.NetworkClient;
+import network.ValueNotFoundException;
 
 /**
  * @author Nicholas Contreras
  */
 
 @SuppressWarnings("serial")
-public class GraphWidget extends DecoratedWidget {
+public class GraphWidget extends Widget {
 
 	public static final String NAME = "Graph";
 
-	private static final int PLOT_PERIOD = 20;
-	private static final int NUM_VALUES = 5;
+	private final JLabel titleLabel;
+	private final GraphPanel graphPanel;
 
-	private boolean running;
-	private int historyTime;
+	private final ArrayList<Double> valueHistory;
 
-	private final String[] trackedValues;
+	private final Thread timingThread;
+	private boolean stopThread;
 
-	private final ArrayList<Datapoint[]> valueHistory;
+	private int historyLength;
+	private int pollingRate;
 
-	private final ChartPanel chartPanel;
-	private final JFreeChart graph;
+	private String valueToGraph;
 
 	public GraphWidget() {
 
-		trackedValues = new String[NUM_VALUES];
-		for (int i = 0; i < NUM_VALUES; i++) {
-			trackedValues[i] = "";
+		titleLabel = new JLabel("New Graph", SwingConstants.CENTER);
+		this.add(titleLabel, BorderLayout.NORTH);
+
+		graphPanel = new GraphPanel();
+		this.add(graphPanel, BorderLayout.CENTER);
+
+		valueHistory = new ArrayList<Double>();
+		valueToGraph = "";
+
+		historyLength = 10;
+		pollingRate = 20;
+
+		stopThread = false;
+		timingThread = new Thread(() -> run(), "Graph-Timing-Thread");
+		timingThread.setDaemon(true);
+	}
+
+	private void run() {
+		while (!stopThread) {
+			long startTime = System.currentTimeMillis();
+
+			updateValueHistory();
+			graphPanel.repaint();
+
+			int timeElapsed = (int) (System.currentTimeMillis() - startTime);
+			int timeToSleep = (int) ((1000.0 / pollingRate) - timeElapsed);
+
+			try {
+				Thread.sleep(Math.max(timeToSleep, 1));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
+	}
 
-		valueHistory = new ArrayList<Datapoint[]>();
-
-		running = true;
-		historyTime = 10;
-
-		String chartTitle = "Objects Movement Chart";
-		String xAxisLabel = "Time (s)";
-		String yAxisLabel = "Values";
-
-		graph = ChartFactory.createXYLineChart(chartTitle, xAxisLabel, yAxisLabel, null);
-		graph.setTitle("");
-
-		chartPanel = new ChartPanel(graph);
-		chartPanel.setPreferredSize(new Dimension(400, 200));
-		chartPanel.setPopupMenu(null);
-
-		add(chartPanel, BorderLayout.CENTER);
-
-		titleLabel.setText("Graph");
-
-		settingsButton.addActionListener((ActionEvent) -> createSettingsDialog());
-		Timer t = new Timer(true);
-		t.scheduleAtFixedRate(new TimerTask() {
-			@Override
-			public void run() {
-				if (running) {
-					updateValueHistory();
-				}
-			}
-		}, 0, PLOT_PERIOD);
-
-		t.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				updateGraph();
-			}
-		}, 0, PLOT_PERIOD);
-
-		chartPanel.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
-					running = !running;
-				}
-			}
-		});
+	private void setGraphedValue(String newValue) {
+		if (!newValue.equals(valueToGraph)) {
+			valueHistory.clear();
+			valueToGraph = newValue;
+		}
 	}
 
 	private void updateValueHistory() {
-		valueHistory.add(new Datapoint[NUM_VALUES]);
+		try {
+			double curVal = NetworkClient.getInstance().readDouble(valueToGraph);
+			valueHistory.add(curVal);
+		} catch (ValueNotFoundException | NumberFormatException e) {
+			valueHistory.add(null);
+		}
 
-		while (valueHistory.size() > (1000 / PLOT_PERIOD) * historyTime) {
+		while (valueHistory.size() > historyLength * pollingRate) {
 			valueHistory.remove(0);
 		}
-
-		for (int i = 0; i < NUM_VALUES; i++) {
-			if (!trackedValues[i].isEmpty()) {
-				if (NetworkClient.getInstance().hasValue(trackedValues[i])) {
-					try {
-						double curValue = NetworkClient.getInstance().readDouble(trackedValues[i]);
-						valueHistory.get(valueHistory.size() - 1)[i] = new Datapoint(System.currentTimeMillis(),
-								curValue);
-					} catch (NumberFormatException e) {
-					}
-				}
-			}
-		}
 	}
 
-	private void updateGraph() {
-		XYSeriesCollection dataset = new XYSeriesCollection();
-		for (int i = 0; i < NUM_VALUES; i++) {
-			if (!trackedValues[i].isEmpty()) {
-				XYSeries curSeries = new XYSeries(trackedValues[i]);
-				for (int j = 0; j < valueHistory.size(); j++) {
-					if (valueHistory.get(j)[i] != null) {
-						double displayTime = (valueHistory.get(j)[i].time - System.currentTimeMillis()) / 1000.0;
-						curSeries.add(displayTime, valueHistory.get(j)[i].value);
-					}
-				}
-				dataset.addSeries(curSeries);
-			}
-		}
-
-		graph.getXYPlot().setDataset(dataset);
-	}
-
-	private void createSettingsDialog() {
-		JDialog settingsDialog = new JDialog();
-		settingsDialog.setModalityType(ModalityType.APPLICATION_MODAL);
-
-		JPanel outerPanel = new JPanel(new BorderLayout());
-
-		outerPanel.add(new JLabel("Values to Graph", JLabel.CENTER), BorderLayout.NORTH);
-
-		JPanel valuesPanel = new JPanel(new GridLayout(NUM_VALUES + 2, 2));
-
-		JTextField[] valueFields = new JTextField[NUM_VALUES];
-		for (int i = 0; i < NUM_VALUES; i++) {
-			JTextField valueField = new JTextField(10);
-			if (trackedValues[i] != null) {
-				valueField.setText(trackedValues[i]);
-			}
-
-			valueFields[i] = valueField;
-
-			valuesPanel.add(new JLabel("Value " + (i + 1) + ":"));
-			valuesPanel.add(valueField);
-		}
-
-		valuesPanel.add(new JLabel());
-		valuesPanel.add(new JLabel());
-		valuesPanel.add(new JLabel("History Length (s):"));
-
-		JSpinner historyLengthSpinner = new JSpinner(new SpinnerNumberModel(historyTime, 1, 100, 1));
-		valuesPanel.add(historyLengthSpinner);
-
-		outerPanel.add(valuesPanel, BorderLayout.CENTER);
-
-		JButton closeButton = new JButton("Close");
-		closeButton.addActionListener((ActionEvent) -> {
-
-			for (int i = 0; i < NUM_VALUES; i++) {
-				trackedValues[i] = valueFields[i].getText();
-			}
-
-			historyTime = (int) ((SpinnerNumberModel) historyLengthSpinner.getModel()).getNumber();
-
-			settingsDialog.dispose();
-		});
-		outerPanel.add(closeButton, BorderLayout.SOUTH);
-
-		settingsDialog.add(outerPanel);
-
-		settingsDialog.pack();
-		settingsDialog.setLocationRelativeTo(this);
-		settingsDialog.setVisible(true);
-	}
-
-	private class Datapoint implements Serializable {
-
-		private final long time;
-		private final double value;
-
-		private Datapoint(long time, double value) {
-			this.time = time;
-			this.value = value;
-		}
+	@Override
+	protected void deconstruct() {
+		stopThread = true;
 	}
 
 	@Override
 	protected void widgetLoaded(Map<String, String> args) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	protected Map<String, String> widgetSaved() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	protected void showSettingsWindow() {
+		JDialog settingsDialog = new JDialog();
+		settingsDialog.setTitle("Settings");
+		settingsDialog.setLocationRelativeTo(this);
+		settingsDialog.setModalityType(ModalityType.APPLICATION_MODAL);
+
+		JPanel outerPanel = new JPanel(new BorderLayout(5, 5));
+		outerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+		outerPanel.add(new JLabel("Settings", SwingConstants.CENTER), BorderLayout.NORTH);
+
+		JPanel innerPanel = new JPanel(new GridLayout(0, 2, 5, 5));
+		innerPanel.add(new JLabel("Value to Graph:"));
+
+		JTextField valueField = new JTextField(valueToGraph, 20);
+		innerPanel.add(valueField);
+
+		innerPanel.add(new JLabel("History to Track (s):"));
+
+		JSpinner historyLengthSpinner = new JSpinner(new SpinnerNumberModel(historyLength, 1, 100, 1));
+		innerPanel.add(historyLengthSpinner);
+
+		innerPanel.add(new JLabel("Polling Rate (hz):"));
+
+		JSpinner pollingRateSpinner = new JSpinner(new SpinnerNumberModel(pollingRate, 1, 100, 1));
+		innerPanel.add(pollingRateSpinner);
+
+		outerPanel.add(innerPanel, BorderLayout.CENTER);
+
+		JButton acceptButton = new JButton("Accept");
+		acceptButton.addActionListener((ActionEvent) -> {
+			setGraphedValue(valueField.getText());
+			historyLength = (int) historyLengthSpinner.getValue();
+			pollingRate = (int) pollingRateSpinner.getValue();
+
+			settingsDialog.dispose();
+		});
+		outerPanel.add(acceptButton, BorderLayout.SOUTH);
+		settingsDialog.add(outerPanel);
+
+		settingsDialog.pack();
+		settingsDialog.setResizable(false);
+		settingsDialog.setVisible(true);
+	}
+
+	private class GraphPanel extends JPanel {
+		@Override
+		protected void paintComponent(Graphics g) {
+			Graphics2D g2d = (Graphics2D) g;
+
+			g2d.setColor(Color.WHITE);
+			g2d.fillRect(0, 0, getWidth(), getHeight());
+		}
 	}
 }

@@ -33,6 +33,8 @@ public class FakeRobotWidget extends Widget {
 	private final JPanel valuesToSendPanel;
 	private final JButton addRowButton;
 
+	private final Timer timer;
+
 	public FakeRobotWidget() {
 		valuesTable = new ArrayList<JTextField[]>();
 
@@ -60,7 +62,8 @@ public class FakeRobotWidget extends Widget {
 
 		NetworkServer.getInstance().setPort(12345);
 
-		new Timer(true).schedule(new TimerTask() {
+		timer = new Timer(true);
+		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				for (JTextField[] curNameValuePair : valuesTable) {
@@ -73,6 +76,11 @@ public class FakeRobotWidget extends Widget {
 				}
 			}
 		}, 0, 100);
+	}
+
+	@Override
+	protected void deconstruct() {
+		timer.cancel();
 	}
 
 	@Override

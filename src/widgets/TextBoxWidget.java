@@ -53,9 +53,9 @@ public class TextBoxWidget extends Widget {
 
 	private void setMonitoredValue(String toWatch) {
 		if (toWatch != null) {
-			
+
 			titleLabel.setText("Text Box: '" + toWatch + "'");
-			
+
 			if (valueToDisplay != null) {
 				NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
 			}
@@ -66,6 +66,11 @@ public class TextBoxWidget extends Widget {
 				textField.setText(NetworkClient.getInstance().readString(valueToDisplay));
 			});
 		}
+	}
+
+	@Override
+	protected void deconstruct() {
+		NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
 	}
 
 	@Override
@@ -106,15 +111,16 @@ public class TextBoxWidget extends Widget {
 
 		settingsDialog.add(settingsPanel, BorderLayout.CENTER);
 
-		JButton closeButton = new JButton("Close");
-		closeButton.addActionListener((ActionEvent) -> {
+		JButton acceptButton = new JButton("Accept");
+		acceptButton.addActionListener((ActionEvent) -> {
 			setMonitoredValue(displayValueTextField.getText());
 			textField.setEditable(editableCheckBox.isSelected());
 			settingsDialog.dispose();
 		});
-		settingsDialog.add(closeButton, BorderLayout.SOUTH);
+		settingsDialog.add(acceptButton, BorderLayout.SOUTH);
 
 		settingsDialog.pack();
+		settingsDialog.setResizable(false);
 		settingsDialog.setVisible(true);
 	}
 }

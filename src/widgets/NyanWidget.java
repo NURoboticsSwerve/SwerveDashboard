@@ -20,14 +20,15 @@ import dashboard.Widget;
 
 @SuppressWarnings("serial")
 public class NyanWidget extends Widget {
-	
+
 	public static final String NAME = "Nyan";
 
 	private static final int NUM_FRAMES = 12;
 
+	private BufferedImage masterImage;
 	private final JLabel imageLabel;
-
-	private transient BufferedImage masterImage;
+	
+	private final Timer timer;
 
 	private int curFrame;
 
@@ -43,7 +44,8 @@ public class NyanWidget extends Widget {
 			e.printStackTrace();
 		}
 
-		new Timer(true).schedule(new TimerTask() {
+		timer = new Timer(true);
+		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				updateNyan();
@@ -59,6 +61,11 @@ public class NyanWidget extends Widget {
 
 		curFrame++;
 		curFrame %= NUM_FRAMES;
+	}
+
+	@Override
+	protected void deconstruct() {
+		timer.cancel();
 	}
 
 	@Override

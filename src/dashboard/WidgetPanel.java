@@ -95,6 +95,7 @@ public class WidgetPanel extends JPanel {
 		for (int i = 0; i < widgets.size(); i++) {
 			if (widgets.get(i).removeRequested()) {
 				remove(widgets.get(i).getMoveResizePanel());
+				widgets.get(i).deconstruct();
 				widgets.remove(i);
 				i--;
 			}

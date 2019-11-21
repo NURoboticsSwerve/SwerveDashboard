@@ -116,6 +116,8 @@ abstract public class Widget extends JPanel {
 		}
 		return s;
 	}
+	
+	abstract protected void deconstruct();
 
 	abstract protected void widgetLoaded(Map<String, String> args);
 

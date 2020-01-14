@@ -46,18 +46,22 @@ public class WidgetPanel extends JPanel {
 				int y = Integer.parseInt(curWidgetData[2]);
 				int width = Integer.parseInt(curWidgetData[3]);
 				int height = Integer.parseInt(curWidgetData[4]);
-				newWidget.getMoveResizePanel().setBounds(x, y, width, height);
 
 				Decoder decoder = Base64.getDecoder();
 				Map<String, String> dataMap = new HashMap<String, String>();
 				for (int i = 5; i < curWidgetData.length; i++) {
 					String[] keyValueEncodedPair = curWidgetData[i].split(":");
 					String key = new String(decoder.decode(keyValueEncodedPair[0]));
-					String value = new String(decoder.decode(keyValueEncodedPair[1]));
+					String value = "";
+					if (keyValueEncodedPair.length == 2) {
+						value = new String(decoder.decode(keyValueEncodedPair[1]));
+					}
 					dataMap.put(key, value);
 				}
-				newWidget.widgetLoaded(dataMap);
+				
 				addWidget(newWidget);
+				newWidget.getMoveResizePanel().setBounds(x, y, width, height);
+				newWidget.widgetLoaded(dataMap);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

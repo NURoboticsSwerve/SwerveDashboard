@@ -180,8 +180,18 @@ public class GraphWidget extends Widget {
 		protected void paintComponent(Graphics g) {
 			Graphics2D g2d = (Graphics2D) g;
 
+			// Clear the chart
 			g2d.setColor(Color.WHITE);
 			g2d.fillRect(0, 0, getWidth(), getHeight());
+
+			// Draw in a vertical line every second
+			g2d.setColor(Color.GRAY);
+			int tickMarkSpacing = getWidth() / historyLength;
+			int offset = (int) (((System.currentTimeMillis() % 1000) / 1000.0) * tickMarkSpacing);
+			for (int i = 0; i <= historyLength; i++) {
+				int x = (i * tickMarkSpacing) - offset;
+				g2d.drawLine(x, 0, x, getHeight());
+			}
 		}
 	}
 }

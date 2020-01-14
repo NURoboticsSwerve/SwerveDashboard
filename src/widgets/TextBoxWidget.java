@@ -52,7 +52,7 @@ public class TextBoxWidget extends Widget {
 	}
 
 	private void setMonitoredValue(String toWatch) {
-		if (toWatch != null) {
+		if (toWatch != null && !toWatch.isEmpty()) {
 
 			titleLabel.setText("Text Box: '" + toWatch + "'");
 

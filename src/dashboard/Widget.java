@@ -104,7 +104,8 @@ abstract public class Widget extends JPanel {
 
 	String toSaveForm() {
 		String s = this.getClass().getCanonicalName() + ",";
-		s += this.getX() + "," + this.getY() + "," + this.getWidth() + "," + this.getHeight();
+		s += moveResizePanel.getX() + "," + moveResizePanel.getY() + "," + moveResizePanel.getWidth() + ","
+				+ moveResizePanel.getHeight();
 
 		Map<String, String> saveMap = widgetSaved();
 		if (saveMap != null) {
@@ -116,7 +117,7 @@ abstract public class Widget extends JPanel {
 		}
 		return s;
 	}
-	
+
 	abstract protected void deconstruct();
 
 	abstract protected void widgetLoaded(Map<String, String> args);

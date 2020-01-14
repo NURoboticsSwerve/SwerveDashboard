@@ -31,6 +31,7 @@ public class ConnectionWidget extends Widget {
 		this.add(new JLabel("Connection Status", SwingConstants.CENTER), BorderLayout.NORTH);
 
 		field = new JTextField(10);
+		field.setEditable(false);
 		this.add(field, BorderLayout.CENTER);
 
 		timer = new Timer(true);

@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 
 import dashboard.Widget;
 import network.NetworkClient;
+import network.ValueNotFoundException;
 
 /**
  * @author Nicholas Contreras
@@ -44,25 +45,32 @@ public class BooleanBox extends Widget {
 
 	private void setMonitoredValue(String toWatch) {
 		if (toWatch != null) {
-			if (valueToWatch != null) {
+			if (valueToWatch != null && !valueToWatch.isEmpty()) {
 				NetworkClient.getInstance().removeValueMonitor(valueToWatch, callbackName);
 			}
 
-			callbackName = "BooleanBox-" + Math.random() + "-" + System.currentTimeMillis();
 			valueToWatch = toWatch;
-			NetworkClient.getInstance().addValueMonitor(toWatch, callbackName, () -> updateValue());
+
+			if (!valueToWatch.isEmpty()) {
+				callbackName = "BooleanBox-" + Math.random() + "-" + System.currentTimeMillis();
+				NetworkClient.getInstance().addValueMonitor(valueToWatch, callbackName, () -> updateValue());
+			}
 		}
 	}
 
 	private void updateValue() {
-		String readValue = NetworkClient.getInstance().readString(valueToWatch);
+		try {
+			String readValue = NetworkClient.getInstance().readString(valueToWatch);
 
-		if (readValue.equalsIgnoreCase("true")) {
-			displayColor = Color.GREEN;
-		} else if (readValue.equalsIgnoreCase("false")) {
-			displayColor = Color.RED;
-		} else {
-			displayColor = Color.YELLOW;
+			if (readValue.equalsIgnoreCase("true")) {
+				displayColor = Color.GREEN;
+			} else if (readValue.equalsIgnoreCase("false")) {
+				displayColor = Color.RED;
+			} else {
+				displayColor = Color.YELLOW;
+			}
+		} catch (ValueNotFoundException e) {
+			displayColor = Color.GRAY;
 		}
 	}
 

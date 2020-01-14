@@ -36,7 +36,7 @@ public class TextBoxWidget extends Widget {
 		titleLabel = new JLabel("New Text Box", SwingConstants.CENTER);
 		this.add(titleLabel, BorderLayout.NORTH);
 
-		valueToDisplay = "";
+		setMonitoredValue("");
 
 		textField = new JTextField(20);
 		textField.setEditable(false);
@@ -52,19 +52,23 @@ public class TextBoxWidget extends Widget {
 	}
 
 	private void setMonitoredValue(String toWatch) {
-		if (toWatch != null && !toWatch.isEmpty()) {
+		if (toWatch != null) {
 
-			titleLabel.setText("Text Box: '" + toWatch + "'");
-
-			if (valueToDisplay != null) {
+			if (valueToDisplay != null && !valueToDisplay.isEmpty()) {
 				NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
 			}
 
-			callbackName = "BooleanBox-" + Math.random() + "-" + System.currentTimeMillis();
 			valueToDisplay = toWatch;
-			NetworkClient.getInstance().addValueMonitor(toWatch, callbackName, () -> {
-				textField.setText(NetworkClient.getInstance().readString(valueToDisplay));
-			});
+
+			if (valueToDisplay.isEmpty()) {
+				titleLabel.setText("New Text Box");
+			} else {
+				titleLabel.setText("Text Box: '" + valueToDisplay + "'");
+				callbackName = "TextBox-" + Math.random() + "-" + System.currentTimeMillis();
+				NetworkClient.getInstance().addValueMonitor(valueToDisplay, callbackName, () -> {
+					textField.setText(NetworkClient.getInstance().readString(valueToDisplay));
+				});
+			}
 		}
 	}
 

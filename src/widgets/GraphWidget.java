@@ -1,20 +1,16 @@
 package widgets;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -25,12 +21,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 
 import dashboard.Widget;
 import network.NetworkClient;
@@ -64,6 +54,7 @@ public class GraphWidget extends Widget {
 		this.add(titleLabel, BorderLayout.NORTH);
 
 		graphPanel = new GraphPanel();
+		graphPanel.setPreferredSize(new Dimension(400, 200));
 		this.add(graphPanel, BorderLayout.CENTER);
 
 		valueHistory = new ArrayList<Double>();
@@ -75,14 +66,15 @@ public class GraphWidget extends Widget {
 		stopThread = false;
 		timingThread = new Thread(() -> run(), "Graph-Timing-Thread");
 		timingThread.setDaemon(true);
+		timingThread.start();
 	}
 
 	private void run() {
+
 		while (!stopThread) {
 			long startTime = System.currentTimeMillis();
 
 			updateValueHistory();
-			graphPanel.repaint();
 
 			int timeElapsed = (int) (System.currentTimeMillis() - startTime);
 			int timeToSleep = (int) ((1000.0 / pollingRate) - timeElapsed);
@@ -96,22 +88,59 @@ public class GraphWidget extends Widget {
 	}
 
 	private void setGraphedValue(String newValue) {
-		if (!newValue.equals(valueToGraph)) {
-			valueHistory.clear();
+		if (newValue != null) {
+			if (!newValue.equals(valueToGraph)) {
+				valueHistory.clear();
+			}
+
 			valueToGraph = newValue;
+
+			if (valueToGraph.isEmpty()) {
+				titleLabel.setText("New Graph");
+			} else {
+				titleLabel.setText("Graph of '" + valueToGraph + "'");
+			}
 		}
 	}
 
 	private void updateValueHistory() {
 		try {
 			double curVal = NetworkClient.getInstance().readDouble(valueToGraph);
-			valueHistory.add(curVal);
-		} catch (ValueNotFoundException | NumberFormatException e) {
+			valueHistory.add(0, curVal);
+		} catch (IllegalArgumentException | ValueNotFoundException e) {
 			valueHistory.add(null);
 		}
 
 		while (valueHistory.size() > historyLength * pollingRate) {
-			valueHistory.remove(0);
+			valueHistory.remove(valueHistory.size() - 1);
+		}
+	}
+
+	private double getMinHistoryValue() {
+		if (valueHistory.isEmpty()) {
+			return 0;
+		} else {
+			double min = 0;
+			for (int i = 1; i < valueHistory.size(); i++) {
+				if (valueHistory.get(i) != null) {
+					min = Math.min(min, valueHistory.get(i));
+				}
+			}
+			return min;
+		}
+	}
+
+	private double getMaxHistoryValue() {
+		if (valueHistory.isEmpty()) {
+			return 0;
+		} else {
+			double max = 0;
+			for (int i = 1; i < valueHistory.size(); i++) {
+				if (valueHistory.get(i) != null) {
+					max = Math.max(max, valueHistory.get(i));
+				}
+			}
+			return max;
 		}
 	}
 
@@ -186,11 +215,50 @@ public class GraphWidget extends Widget {
 
 			// Draw in a vertical line every second
 			g2d.setColor(Color.GRAY);
-			int tickMarkSpacing = getWidth() / historyLength;
-			int offset = (int) (((System.currentTimeMillis() % 1000) / 1000.0) * tickMarkSpacing);
+			double horzTickMarkSpacing = (double) getWidth() / historyLength;
+			int horzOffset = (int) (((System.currentTimeMillis() % 1000) / 1000.0) * horzTickMarkSpacing);
 			for (int i = 0; i <= historyLength; i++) {
-				int x = (i * tickMarkSpacing) - offset;
+				int x = (int) ((i * horzTickMarkSpacing) - horzOffset);
 				g2d.drawLine(x, 0, x, getHeight());
+			}
+
+			int maxDisplayValue = (int) (getMaxHistoryValue() + 1);
+			int minDisplayValue = (int) (getMinHistoryValue() - 0.99);
+
+			maxDisplayValue = Math.max(maxDisplayValue, 1);
+			minDisplayValue = Math.min(minDisplayValue, 0);
+
+			int vertValueRange = maxDisplayValue - minDisplayValue;
+			int vertTickMarkSpacing = (getHeight() / vertValueRange);
+
+			for (int i = 0; i <= vertValueRange; i++) {
+				int y = (i * vertTickMarkSpacing);
+				g2d.drawLine(0, y, getWidth(), y);
+			}
+
+			int zeroPosition = (maxDisplayValue * vertTickMarkSpacing);
+			g2d.setStroke(new BasicStroke(3));
+			g2d.drawLine(0, zeroPosition, getWidth(), zeroPosition);
+
+			g2d.setColor(Color.BLUE);
+			double pointSpacing = getWidth() / ((double) historyLength * pollingRate);
+			for (int i = valueHistory.size() - 1; i >= 0; i--) {
+				if (valueHistory.get(i) != null) {
+					int x = (int) (getWidth() - (i * pointSpacing));
+					int y = (int) (zeroPosition - (valueHistory.get(i) * vertTickMarkSpacing));
+					g2d.fillOval(x, y, 1, 1);
+				}
+			}
+
+			g2d.setColor(Color.RED);
+			g2d.setFont(new Font("SansSerif", Font.PLAIN, 14));
+			int vertTextOffset = g2d.getFontMetrics().getHeight();
+			for (int i = 0; i <= vertValueRange * 2; i++) {
+				int negHorzTextOffset = g2d.getFontMetrics().stringWidth(-i + "") / 2;
+				int posHorzTextOffset = g2d.getFontMetrics().stringWidth(i + "") / 2;
+				g2d.drawString(-i + "", negHorzTextOffset,
+						zeroPosition + (i * vertTickMarkSpacing) - (vertTextOffset / 2));
+				g2d.drawString(i + "", posHorzTextOffset, zeroPosition - (i * vertTickMarkSpacing) + vertTextOffset);
 			}
 		}
 	}

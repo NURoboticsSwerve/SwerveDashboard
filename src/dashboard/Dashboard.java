@@ -238,7 +238,6 @@ public class Dashboard {
 		frame.setVisible(true);
 
 		new Timer().schedule(new TimerTask() {
-
 			@Override
 			public void run() {
 				frame.repaint();

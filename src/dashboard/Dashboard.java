@@ -40,7 +40,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import network.NetworkClient;
 import widgets.BooleanBox;
 import widgets.ConnectionWidget;
-import widgets.FakeRobotWidget;
 import widgets.GraphWidget;
 import widgets.NyanWidget;
 import widgets.TextBoxWidget;
@@ -65,7 +64,6 @@ public class Dashboard {
 	private void loadBuiltInWidgets() {
 		widgetTypes.add(BooleanBox.class);
 		widgetTypes.add(TextBoxWidget.class);
-//		widgetTypes.add(FakeRobotWidget.class);
 		widgetTypes.add(GraphWidget.class);
 		widgetTypes.add(NyanWidget.class);
 		widgetTypes.add(ConnectionWidget.class);

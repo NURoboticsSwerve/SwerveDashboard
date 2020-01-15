@@ -18,7 +18,6 @@ import javax.swing.SwingConstants;
 
 import dashboard.Widget;
 import network.NetworkClient;
-import network.ValueNotFoundException;
 
 /**
  * @author Nicholas Contreras
@@ -39,8 +38,6 @@ public class BooleanBox extends Widget {
 		this.setMinimumSize(new Dimension(100, 100));
 
 		setMonitoredValue("");
-
-		displayColor = Color.YELLOW;
 	}
 
 	private void setMonitoredValue(String toWatch) {
@@ -54,23 +51,20 @@ public class BooleanBox extends Widget {
 			if (!valueToWatch.isEmpty()) {
 				callbackName = "BooleanBox-" + Math.random() + "-" + System.currentTimeMillis();
 				NetworkClient.getInstance().addValueMonitor(valueToWatch, callbackName, () -> updateValue());
+				displayColor = Color.GRAY;
 			}
 		}
 	}
 
 	private void updateValue() {
-		try {
-			String readValue = NetworkClient.getInstance().readString(valueToWatch);
+		String readValue = NetworkClient.getInstance().readString(valueToWatch);
 
-			if (readValue.equalsIgnoreCase("true")) {
-				displayColor = Color.GREEN;
-			} else if (readValue.equalsIgnoreCase("false")) {
-				displayColor = Color.RED;
-			} else {
-				displayColor = Color.YELLOW;
-			}
-		} catch (ValueNotFoundException e) {
-			displayColor = Color.GRAY;
+		if (readValue.equalsIgnoreCase("true")) {
+			displayColor = Color.GREEN;
+		} else if (readValue.equalsIgnoreCase("false")) {
+			displayColor = Color.RED;
+		} else {
+			displayColor = Color.YELLOW;
 		}
 	}
 

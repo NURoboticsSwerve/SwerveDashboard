@@ -5,12 +5,11 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Base64.Decoder;
 
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
@@ -108,7 +107,7 @@ public class WidgetPanel extends JPanel {
 		super.paintComponent(g);
 	}
 
-	private class WidgetMoveResizeManager implements MouseInputListener, Serializable {
+	private class WidgetMoveResizeManager implements MouseInputListener {
 
 		private int prevX, prevY;
 		private boolean moving, resizingWidth, resizingHeight;
@@ -229,7 +228,7 @@ public class WidgetPanel extends JPanel {
 		}
 	}
 
-	private class WidgetRemoveManager implements KeyListener, Serializable {
+	private class WidgetRemoveManager implements KeyListener {
 		@Override
 		public void keyTyped(KeyEvent e) {
 		}
@@ -240,7 +239,6 @@ public class WidgetPanel extends JPanel {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
-			System.out.println("del " + e.getComponent());
 			if (e.getKeyCode() == KeyEvent.VK_DELETE) {
 				for (int i = 0; i < widgets.size(); i++) {
 					if (widgets.get(i).getMoveResizePanel() == e.getComponent()) {

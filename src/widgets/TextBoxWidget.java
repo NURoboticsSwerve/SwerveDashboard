@@ -74,7 +74,9 @@ public class TextBoxWidget extends Widget {
 
 	@Override
 	protected void deconstruct() {
-		NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
+		if (callbackName != null && !callbackName.isEmpty()) {
+			NetworkClient.getInstance().removeValueMonitor(valueToDisplay, callbackName);
+		}
 	}
 
 	@Override

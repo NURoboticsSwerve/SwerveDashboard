@@ -76,7 +76,9 @@ public class BooleanBox extends Widget {
 
 	@Override
 	protected void deconstruct() {
-		NetworkClient.getInstance().removeValueMonitor(valueToWatch, callbackName);
+		if (callbackName != null && !callbackName.isEmpty()) {
+			NetworkClient.getInstance().removeValueMonitor(valueToWatch, callbackName);
+		}
 	}
 
 	@Override

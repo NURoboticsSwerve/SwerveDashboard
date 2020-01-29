@@ -61,6 +61,14 @@ public class Dashboard {
 		widgetTypes = new ArrayList<Class<? extends Widget>>();
 	}
 
+	/**
+	 * Loads the widgets already built into the dashboard program. To add new
+	 * widgets, simply package them into a seperate jar file, and put that jar in
+	 * the DashboardData folder. The dashboard will automatically load them, and
+	 * they do not need to be explicitly loaded here.
+	 * 
+	 * @see Dashboard#loadExternalWidgets()
+	 */
 	private void loadBuiltInWidgets() {
 		widgetTypes.add(BooleanBox.class);
 		widgetTypes.add(TextBoxWidget.class);
@@ -70,6 +78,11 @@ public class Dashboard {
 	}
 
 	@SuppressWarnings("unchecked")
+	/**
+	 * Loads widgets from any jar files placed in the DashboardData folder. If there
+	 * are multiple jar files, the dashboard will load widgets from all of them, so
+	 * ensure that no two widgets have the same name.
+	 */
 	private void loadExternalWidgets() {
 
 		URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
@@ -125,9 +138,11 @@ public class Dashboard {
 
 	private void init() {
 
+		// Load all the available widgets
 		loadBuiltInWidgets();
 		loadExternalWidgets();
 
+		// Set the global theme for the UI
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -135,14 +150,17 @@ public class Dashboard {
 			e.printStackTrace();
 		}
 
+		// Set the address of the server and begin connecting
 		NetworkClient.getInstance().setAddress("localhost", 12345);
 
+		// Setup the UI
 		frame = new JFrame("Dashboard");
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setMinimumSize(new Dimension(400, 300));
 
 		widgetPanel = new WidgetPanel();
 
+		// Load the default save file if it exists
 		loadSaveFile(new File(DATA_DIR, "default.dash"));
 
 		JMenuBar menuBar = new JMenuBar();
@@ -155,6 +173,7 @@ public class Dashboard {
 		});
 		fileMenu.add(clearMenuItem);
 
+		// Add file load functionality
 		JMenuItem loadMenuItem = new JMenuItem("Load");
 		loadMenuItem.addActionListener((ActionEvent) -> {
 			JFileChooser jfc = new JFileChooser(DATA_DIR);
@@ -169,6 +188,7 @@ public class Dashboard {
 		});
 		fileMenu.add(loadMenuItem);
 
+		// Add file save functionality
 		JMenuItem saveCustomMenuItem = new JMenuItem("Save as Custom Layout");
 		saveCustomMenuItem.addActionListener((ActionEvent) -> {
 			JFileChooser jfc = new JFileChooser(DATA_DIR);
@@ -205,6 +225,7 @@ public class Dashboard {
 
 		JMenu addMenu = new JMenu("Add");
 
+		// Add each widget to the 'Add' menu
 		for (Class<? extends Widget> curWidgetType : widgetTypes) {
 			String name = curWidgetType.getSimpleName();
 
@@ -231,6 +252,7 @@ public class Dashboard {
 
 		frame.add(widgetPanel);
 
+		// Display our now prepared UI
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
@@ -243,6 +265,10 @@ public class Dashboard {
 		}, 0, 20);
 	}
 
+	/**
+	 * Displays a pop-up window with options to configure the server name and port
+	 * number. Automatically attempts to reconnect to the address given.
+	 */
 	private void generateNetworkSettingsDialog() {
 		JDialog networkSettingsDialog = new JDialog();
 		networkSettingsDialog.setModalityType(ModalityType.APPLICATION_MODAL);
@@ -280,12 +306,21 @@ public class Dashboard {
 		networkSettingsDialog.setVisible(true);
 	}
 
+	/**
+	 * Saves the state of the dashboard including all widgets to a file.
+	 * 
+	 * @param saveFile The file to save to.
+	 */
 	private void writeSaveFile(File saveFile) {
 
+		// Save network settings
 		String saveString = NetworkClient.getInstance().getTargetAddress() + ","
 				+ NetworkClient.getInstance().getTargetPort() + "-";
+		
+		// Save all the widgets
 		saveString += widgetPanel.toSaveForm();
 
+		// Write to the file
 		try {
 			FileOutputStream fos = new FileOutputStream(saveFile, false);
 			fos.write(saveString.getBytes());
@@ -295,6 +330,12 @@ public class Dashboard {
 		}
 	}
 
+	/**
+	 * Reads data from a file and sets the state of the dashboard and it's widgets to
+	 * that of the file.
+	 * 
+	 * @param saveFile The file to read.
+	 */
 	private void loadSaveFile(File saveFile) {
 		if (saveFile.isFile() && saveFile.canRead()) {
 			try {
@@ -304,8 +345,11 @@ public class Dashboard {
 				String loadedData = br.readLine();
 				String[] splitData = loadedData.split("-");
 				String[] splitMyData = splitData[0].split(",");
+				
+				// Set the network settings
 				NetworkClient.getInstance().setAddress(splitMyData[0], Integer.parseInt(splitMyData[1]));
 
+				// Set the widgets
 				widgetPanel.clear();
 				widgetPanel.addFromData(splitData[1]);
 				br.close();

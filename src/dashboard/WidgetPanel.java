@@ -15,6 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
 
 /**
+ * Responsible for managing the various widgets in the dashboard as they are
+ * added, removed, moved, and resized.
+ * 
  * @author Nicholas Contreras
  */
 
@@ -36,16 +39,27 @@ public class WidgetPanel extends JPanel {
 		this.addMouseMotionListener(moveResizeManager);
 	}
 
+	/**
+	 * Creates new widgets from a string that describes the type, location, size,
+	 * and widget specific details of multiple widgets.
+	 * 
+	 * @param widgetsData A string describing any number of widgets.
+	 * 
+	 * @see WidgetPanel#toSaveForm()
+	 */
 	void addFromData(String widgetsData) {
 		for (String curWidgetString : widgetsData.split(";")) {
 			String[] curWidgetData = curWidgetString.split(",");
 			try {
+				// Create a new widget and load its basic information
 				Widget newWidget = (Widget) Class.forName(curWidgetData[0]).newInstance();
 				int x = Integer.parseInt(curWidgetData[1]);
 				int y = Integer.parseInt(curWidgetData[2]);
 				int width = Integer.parseInt(curWidgetData[3]);
 				int height = Integer.parseInt(curWidgetData[4]);
 
+				// The widget specific data is decoded from Base64, and then given to the newly
+				// created widget as a map for it to parse. 
 				Decoder decoder = Base64.getDecoder();
 				Map<String, String> dataMap = new HashMap<String, String>();
 				for (int i = 5; i < curWidgetData.length; i++) {
@@ -57,7 +71,8 @@ public class WidgetPanel extends JPanel {
 					}
 					dataMap.put(key, value);
 				}
-				
+
+				// Add the now correctly configured widget to the panel
 				addWidget(newWidget);
 				newWidget.getMoveResizePanel().setBounds(x, y, width, height);
 				newWidget.widgetLoaded(dataMap);
@@ -67,6 +82,11 @@ public class WidgetPanel extends JPanel {
 		}
 	}
 
+	/**
+	 * Adds an already made widget object to the dashboard.
+	 * 
+	 * @param w The prepared widget object.
+	 */
 	void addWidget(Widget w) {
 		this.add(w.getMoveResizePanel());
 		w.getMoveResizePanel().addMouseListener(moveResizeManager);
@@ -76,16 +96,29 @@ public class WidgetPanel extends JPanel {
 		widgets.add(w);
 	}
 
+	/**
+	 * Converts all the widgets currently in the dashboard into a single string that
+	 * describes their type, location, size, and any widget specific data.
+	 * 
+	 * @return A string that can be used to recreate the widgets.
+	 * 
+	 * @see WidgetPanel#addFromData(String)
+	 */
 	String toSaveForm() {
 		String s = "";
 
 		for (int i = 0; i < widgets.size(); i++) {
+			// Widgets are responsible for formatting themselves
+			// We simply append the individual widgets here
 			s += ";" + widgets.get(i).toSaveForm();
 		}
 
 		return s.substring(1);
 	}
 
+	/**
+	 * Removes all the widgets from the dashboard.
+	 */
 	void clear() {
 		while (!widgets.isEmpty()) {
 			widgets.get(0).removeWidget();
@@ -107,6 +140,11 @@ public class WidgetPanel extends JPanel {
 		super.paintComponent(g);
 	}
 
+	/**
+	 * Responsible for managing the movement and resizing of widgets by the user.
+	 * 
+	 * @author Nicholas Contreras
+	 */
 	private class WidgetMoveResizeManager implements MouseInputListener {
 
 		private int prevX, prevY;

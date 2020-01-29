@@ -51,6 +51,8 @@ public class ConnectionWidget extends Widget {
 
 	@Override
 	protected void deconstruct() {
+		// If we didn't do this the timer would continue to exist, and would be waste of
+		// memory.
 		timer.cancel();
 	}
 
